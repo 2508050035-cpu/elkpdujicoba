@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>E-LKPD Transformasi Geometri – Batik Gumelem (v2)</title>
+<style>
+:root{--soga:#6b3e1d;--indigo:#1d2f5e;--krem:#fbf3e1;--emas:#c8902e;--merah:#a8432b;--hijau:#2f7d4f;--teks:#2b2118;--kartu:#fffaf0}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",system-ui,Arial,sans-serif;color:var(--teks);background:var(--krem);line-height:1.55}
+/* ---------- Header animasi ---------- */
+header{position:relative;overflow:hidden;background-color:var(--soga);color:#fff;padding:22px 16px 16px;text-align:center;
+ background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cg fill='none' stroke='%23e0b564' stroke-width='2' opacity='.35'%3E%3Cellipse cx='30' cy='15' rx='8' ry='13'/%3E%3Cellipse cx='30' cy='45' rx='8' ry='13'/%3E%3Cellipse cx='15' cy='30' rx='13' ry='8'/%3E%3Cellipse cx='45' cy='30' rx='13' ry='8'/%3E%3C/g%3E%3C/svg%3E");
+ animation:drift 40s linear infinite}
+@keyframes drift{to{background-position:240px 120px}}
+header h1{margin:0;font-size:1.55rem;letter-spacing:.3px;position:relative}
+header p{margin:4px 0 10px;color:#f1dcae;font-size:.95rem;position:relative}
+.orn{position:absolute;width:120px;height:120px;opacity:.28;animation:spin 30s linear infinite}
+.orn.l{left:-30px;top:-30px}.orn.r{right:-30px;bottom:-40px;animation-direction:reverse}
+@keyframes spin{to{transform:rotate(360deg)}}
+.prog{position:relative;max-width:520px;margin:0 auto;background:rgba(255,255,255,.2);border-radius:20px;height:16px;overflow:hidden}
+.prog>div{height:100%;width:0;background:linear-gradient(90deg,#e8b84a,#f6d98a,#e8b84a);background-size:200% 100%;animation:shine 3s linear infinite;transition:width .6s;display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#3b2506;font-weight:700}
+@keyframes shine{to{background-position:-200% 0}}
+nav{position:sticky;top:0;z-index:5;background:var(--indigo);display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:6px}
+.tab{border:0;background:transparent;color:#d8e0f5;padding:8px 11px;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;transition:.2s}
+.tab:hover{background:rgba(255,255,255,.12);transform:translateY(-1px)}
+.tab.active{background:var(--emas);color:#2b1a05}
+main{max-width:980px;margin:0 auto;padding:14px}
+.panel{display:none}
+.panel.active{display:block;animation:fade .4s}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card{background:var(--kartu);border:1px solid #e6d3a8;border-left:6px solid var(--emas);border-radius:12px;padding:14px 16px;margin:12px 0;box-shadow:0 2px 6px rgba(80,50,10,.08);transition:.25s}
+.card:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(80,50,10,.15)}
+.card h2,.card h3{margin:0 0 6px;color:var(--soga)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.btn{background:var(--indigo);color:#fff;border:0;padding:9px 16px;border-radius:8px;cursor:pointer;font-weight:600;font-size:.92rem;transition:.2s}
+.btn:hover{filter:brightness(1.2);transform:translateY(-1px)}
+.btn:active{transform:scale(.97)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.alt{background:var(--soga)}.btn.gold{background:var(--emas);color:#2b1a05}.btn.green{background:var(--hijau)}
+label{font-weight:600;font-size:.88rem;display:block;margin:8px 0 2px}
+input[type=text],input[type=number],select,textarea{width:100%;padding:8px;border:1px solid #c9b58a;border-radius:8px;font-size:.95rem;background:#fff;font-family:inherit}
+input[type=range]{width:100%;accent-color:var(--soga)}
+input[type=color]{width:60px;height:32px;border:0;padding:0;background:none}
+.chk{display:flex;align-items:center;gap:6px;font-weight:600;font-size:.88rem;margin:8px 0}
+canvas{background:#fff;border:2px solid var(--soga);border-radius:10px;width:100%;max-width:480px;height:auto;display:block;margin:0 auto}
+canvas.wide{max-width:720px}
+canvas.demo{max-width:360px;margin:8px 0}
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{border:1px solid #d9c698;padding:5px 8px;text-align:center}
+th{background:#f0e0b8}
+.formula{background:var(--indigo);color:#fff;border-radius:8px;padding:8px 12px;font-family:Consolas,monospace;margin:6px 0;font-size:.95rem}
+.msg{margin-top:8px;padding:8px 10px;border-radius:8px;font-size:.9rem;display:none}
+.msg.ok{display:block;background:#dff3e6;color:#17582f;border:1px solid #9bd2ad;animation:pop .35s}
+.msg.no{display:block;background:#fbe3dd;color:#822f1b;border:1px solid #e5aa9b;animation:shake .35s}
+.msg.info{display:block;background:#e4ebfb;color:#1d2f5e;border:1px solid #aab9e4}
+@keyframes pop{0%{transform:scale(.9);opacity:0}100%{transform:none;opacity:1}}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row>*{flex:1;min-width:90px}
+details{background:#fff;border:1px solid #e0cd9f;border-radius:10px;margin:8px 0;padding:8px 12px}
+summary{cursor:pointer;font-weight:700;color:var(--soga)}
+.opt{display:block;padding:6px 10px;margin:4px 0;border:1px solid #d8c59a;border-radius:8px;background:#fff;cursor:pointer;font-weight:400;transition:.15s}
+.opt:hover{background:#fff3d4;transform:translateX(3px)}
+.badge{display:inline-block;background:var(--emas);color:#2b1a05;border-radius:20px;padding:6px 18px;font-weight:800;font-size:1.1rem;animation:pop .6s}
+.score{font-size:3rem;font-weight:800;color:var(--soga);animation:pop .6s}
+.small{font-size:.82rem;color:#6a5a45}
+.float{display:inline-block;animation:float 2.5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-6px)}}
+pre{background:#1e1b16;color:#f2e7c9;border-radius:10px;padding:12px;overflow:auto;max-height:330px;font-size:.78rem;line-height:1.45;margin:6px 0}
+ol.steps li{margin:6px 0}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin:8px 0}
+.flow span{background:var(--indigo);color:#fff;padding:6px 10px;border-radius:8px;font-size:.82rem;font-weight:600}
+.flow i{font-style:normal;color:var(--soga);font-weight:800}
+#cf{position:fixed;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:50;border:0;background:transparent;border-radius:0;max-width:none}
+footer{text-align:center;padding:16px;font-size:.8rem;color:#6a5a45}
+@media print{header,nav,.noprint,footer,#cf{display:none}.panel{display:none}#hasil{display:block}}
+</style>
+</head>
+<body>
+<!--
+ PETUNJUK GOOGLE SITES:
+ Sisipkan > Sematkan > tab "Kode Sematan" > tempel seluruh kode ini > Berikutnya > Sisipkan.
+ Perbesar kotak sematan (tinggi sekitar 900 px).
+ Untuk fitur "Kirim Hasil ke Guru": isi konstanta URL_SHEETS di bagian JavaScript paling bawah (lihat tab Guru).
+-->
+<canvas id="cf"></canvas>
+<header>
+  <svg class="orn l" viewBox="0 0 100 100"><g fill="none" stroke="#e8b84a" stroke-width="3"><ellipse cx="50" cy="25" rx="14" ry="22"/><ellipse cx="50" cy="75" rx="14" ry="22"/><ellipse cx="25" cy="50" rx="22" ry="14"/><ellipse cx="75" cy="50" rx="22" ry="14"/></g></svg>
+  <svg class="orn r" viewBox="0 0 100 100"><g fill="none" stroke="#e8b84a" stroke-width="3"><ellipse cx="50" cy="25" rx="14" ry="22"/><ellipse cx="50" cy="75" rx="14" ry="22"/><ellipse cx="25" cy="50" rx="22" ry="14"/><ellipse cx="75" cy="50" rx="22" ry="14"/></g></svg>
+  <h1><span class="float">🪶</span> E-LKPD Transformasi Geometri</h1>
+  <p>Menjelajah Translasi, Refleksi, Rotasi &amp; Dilatasi lewat Batik Gumelem</p>
+  <div class="prog"><div id="pbar">0%</div></div>
+</header>
+
+<nav id="nav">
+  <button class="tab active" data-t="beranda">🏠 Beranda</button>
+  <button class="tab" data-t="materi">📖 Materi</button>
+  <button class="tab" data-t="lab">🔬 Lab Geometri</button>
+  <button class="tab" data-t="studio">🎨 Studio Batik</button>
+  <button class="tab" data-t="lkpd">✏️ Kegiatan LKPD</button>
+  <button class="tab" data-t="kuis">🧠 Kuis</button>
+  <button class="tab" data-t="hasil">🏅 Hasil</button>
+  <button class="tab" data-t="guru">👩‍🏫 Guru</button>
+</nav>
+
+<main>
+<!-- ============ BERANDA ============ -->
+<section id="beranda" class="panel active">
+  <div class="card" style="padding:10px"><canvas id="hero" class="wide" width="720" height="260"></canvas></div>
+  <div class="card">
+    <h2>Selamat datang, Pembatik Muda!</h2>
+    <p>Batik Gumelem berasal dari Desa Gumelem, Banjarnegara, Jawa Tengah, dan dikenal dengan warna soga cokelat khasnya. Motif-motifnya dibuat dengan <b>mengulang, menggeser, mencerminkan, memutar, dan memperbesar</b> bentuk dasar. Itulah <b>transformasi geometri</b>! Lihat animasi di atas yang berganti otomatis.</p>
+    <p class="small">Catatan guru: nama motif dan informasi budaya dapat disesuaikan dengan sumber lokal sekolah (mis. Babon Angrem, Lumbon, dll.).</p>
+  </div>
+  <div class="grid2">
+    <div class="card">
+      <h3>🎯 Tujuan Pembelajaran</h3>
+      <ol>
+        <li>Menjelaskan konsep translasi, refleksi, rotasi, dan dilatasi.</li>
+        <li>Menentukan bayangan titik/bangun hasil transformasi pada bidang koordinat.</li>
+        <li>Mengenali transformasi pada motif Batik Gumelem.</li>
+        <li>Merancang pola batik sederhana menggunakan transformasi.</li>
+      </ol>
+    </div>
+    <div class="card">
+      <h3>🧭 Petunjuk Belajar</h3>
+      <ol>
+        <li>Isi identitas di bawah ini.</li>
+        <li>Pelajari tab <b>Materi</b> (ada animasi tiap konsep).</li>
+        <li>Bereksperimen di <b>Lab Geometri</b> &amp; <b>Studio Batik</b>.</li>
+        <li>Kerjakan <b>Kegiatan LKPD</b> dan <b>Kuis</b>.</li>
+        <li>Kirim hasilmu ke guru di tab <b>Hasil</b>.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="card">
+    <h3>👤 Identitas Siswa</h3>
+    <div class="grid2">
+      <div><label for="nama">Nama</label><input id="nama" type="text" placeholder="Nama lengkap"></div>
+      <div><label for="kelas">Kelas</label><input id="kelas" type="text" placeholder="mis. IX-A"></div>
+    </div>
+    <p><button class="btn gold" onclick="show('materi')">Mulai Belajar ➜</button></p>
+  </div>
+</section>
+
+<!-- ============ MATERI ============ -->
+<section id="materi" class="panel">
+  <div class="card"><h2>Ringkasan Materi</h2><p>Buka tiap bagian untuk melihat konsep, rumus, dan <b>animasinya</b>.</p></div>
+
+  <details open><summary>1️⃣ Translasi (Pergeseran)</summary>
+    <canvas class="demo" data-type="translasi" width="360" height="170"></canvas>
+    <p>Memindahkan setiap titik sejauh jarak dan arah yang sama. Bentuk &amp; ukuran tidak berubah.</p>
+    <div class="formula">T(a, b): (x, y) → (x + a, y + b)</div>
+    <p>🪶 <i>Pada batik:</i> motif daun yang diulang berjajar ke kanan atau ke bawah.</p>
+  </details>
+  <details><summary>2️⃣ Refleksi (Pencerminan)</summary>
+    <canvas class="demo" data-type="refleksi" width="360" height="170"></canvas>
+    <p>Memindahkan titik ke seberang garis cermin dengan jarak yang sama.</p>
+    <table>
+      <tr><th>Cermin</th><th>Bayangan (x, y)</th></tr>
+      <tr><td>Sumbu x</td><td>(x, −y)</td></tr>
+      <tr><td>Sumbu y</td><td>(−x, y)</td></tr>
+      <tr><td>Garis y = x</td><td>(y, x)</td></tr>
+      <tr><td>Garis y = −x</td><td>(−y, −x)</td></tr>
+    </table>
+    <p>🪶 <i>Pada batik:</i> motif simetris kiri-kanan seperti sayap atau bunga yang saling berhadapan.</p>
+  </details>
+  <details><summary>3️⃣ Rotasi (Perputaran)</summary>
+    <canvas class="demo" data-type="rotasi" width="360" height="170"></canvas>
+    <p>Memutar titik terhadap pusat sejauh sudut tertentu (positif = berlawanan arah jarum jam).</p>
+    <table>
+      <tr><th>Rotasi pusat O(0,0)</th><th>Bayangan (x, y)</th></tr>
+      <tr><td>90°</td><td>(−y, x)</td></tr>
+      <tr><td>180°</td><td>(−x, −y)</td></tr>
+      <tr><td>270° (−90°)</td><td>(y, −x)</td></tr>
+    </table>
+    <p>🪶 <i>Pada batik:</i> motif kawung/bunga yang menyebar melingkar dari satu titik pusat.</p>
+  </details>
+  <details><summary>4️⃣ Dilatasi (Perkalian / Perbesaran)</summary>
+    <canvas class="demo" data-type="dilatasi" width="360" height="170"></canvas>
+    <p>Mengubah ukuran bangun dengan faktor skala <b>k</b> terhadap pusat tertentu. Bentuk tetap sebangun.</p>
+    <div class="formula">Pusat O(0,0): (x, y) → (kx, ky)</div>
+    <div class="formula">Pusat P(p, q): (x, y) → (p + k(x−p), q + k(y−q))</div>
+    <p>|k| &gt; 1 memperbesar, 0 &lt; |k| &lt; 1 memperkecil, k negatif membalik arah.</p>
+    <p>🪶 <i>Pada batik:</i> motif bertingkat dari kecil ke besar.</p>
+  </details>
+  <details><summary>⭐ Sifat Penting</summary>
+    <p>Translasi, refleksi, dan rotasi disebut <b>isometri</b> karena menjaga ukuran dan bentuk (kongruen). Dilatasi menghasilkan bangun <b>sebangun</b> (ukuran berubah).</p>
+  </details>
+  <p><button class="btn gold" onclick="show('lab')">Coba di Lab Geometri ➜</button></p>
+</section>
+
+<!-- ============ LAB ============ -->
+<section id="lab" class="panel">
+  <div class="card"><h2>🔬 Lab Geometri Batik</h2>
+  <p>Pilih motif dan jenis transformasi, atur nilainya, lalu amati bayangan (cokelat) dari motif asli (biru). Tekan <b>Animasikan</b> untuk melihat gerakannya beserta jejaknya.</p></div>
+  <div class="grid2">
+    <div><canvas id="cv" width="480" height="480"></canvas></div>
+    <div>
+      <div class="card" style="margin-top:0">
+        <label for="ls">Bentuk motif</label>
+        <select id="ls"><option value="layang">Kawung (layang-layang)</option><option value="tumpal">Tumpal (segitiga)</option><option value="ketupat">Belah ketupat</option></select>
+        <label for="lt">Jenis transformasi</label>
+        <select id="lt"><option value="translasi">Translasi</option><option value="refleksi">Refleksi</option><option value="rotasi">Rotasi</option><option value="dilatasi">Dilatasi</option></select>
+
+        <div id="g_trans">
+          <label>a (geser horizontal): <b id="va">3</b></label><input id="la" type="range" min="-10" max="10" step="1" value="3">
+          <label>b (geser vertikal): <b id="vb">2</b></label><input id="lb" type="range" min="-10" max="10" step="1" value="2">
+        </div>
+        <div id="g_ref" style="display:none">
+          <label for="lref">Garis cermin</label>
+          <select id="lref"><option value="x">Sumbu x</option><option value="y">Sumbu y</option><option value="yx">Garis y = x</option><option value="ynx">Garis y = −x</option></select>
+        </div>
+        <div id="g_rot" style="display:none">
+          <label>Sudut putar: <b id="vang">90</b>°</label><input id="lang" type="range" min="-180" max="180" step="15" value="90">
+        </div>
+        <div id="g_dil" style="display:none">
+          <label>Faktor skala k: <b id="vk">2</b></label><input id="lk" type="range" min="-2" max="2" step="0.5" value="2">
+        </div>
+        <div id="g_pus" style="display:none">
+          <div class="row">
+            <div><label>Pusat p: <b id="vp">0</b></label><input id="lp" type="range" min="-5" max="5" step="1" value="0"></div>
+            <div><label>Pusat q: <b id="vq">0</b></label><input id="lq" type="range" min="-5" max="5" step="1" value="0"></div>
+          </div>
+        </div>
+        <label class="chk"><input type="checkbox" id="lloop"> Ulangi animasi terus-menerus</label>
+        <p class="row" style="margin-top:6px">
+          <button class="btn" id="playBtn">▶ Animasikan</button>
+          <button class="btn alt" id="chalBtn">🎯 Tantangan</button>
+        </p>
+        <div id="chalMsg" class="msg"></div>
+      </div>
+      <div class="card">
+        <b>Aturan transformasi:</b>
+        <div class="formula" id="rule">—</div>
+        <table><thead><tr><th>Titik</th><th>Asli</th><th>Bayangan</th></tr></thead><tbody id="tbl"></tbody></table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STUDIO ============ -->
+<section id="studio" class="panel">
+  <div class="card"><h2>🎨 Studio Batik</h2>
+  <p>Rancang pola batikmu! Satu motif daun diperbanyak dengan transformasi. Aktifkan <b>Animasi Pola</b> agar batiknya bergerak. Coba keempat mode untuk menyelesaikan misi.</p></div>
+  <canvas id="cb" width="480" height="320"></canvas>
+  <div class="card">
+    <div class="row">
+      <div><label for="sm">Transformasi</label>
+        <select id="sm"><option value="translasi">Translasi (digeser)</option><option value="refleksi">Refleksi (dicerminkan)</option><option value="rotasi">Rotasi (diputar)</option><option value="dilatasi">Dilatasi (diperbesar)</option></select></div>
+      <div><label>Ukuran motif: <b id="vsz">26</b></label><input id="ssz" type="range" min="14" max="36" value="26"></div>
+      <div><label>Banyak salinan: <b id="vn">8</b></label><input id="sn" type="range" min="3" max="12" value="8"></div>
+    </div>
+    <label class="chk"><input type="checkbox" id="sanim"> ✨ Animasi pola (bergerak otomatis)</label>
+    <div class="row" style="margin-top:4px">
+      <div><label>Warna motif</label><input type="color" id="sc" value="#6b3e1d"></div>
+      <div><label>Warna latar</label><input type="color" id="sb" value="#f6e7c8"></div>
+      <div><button class="btn alt" id="rndBtn">🎲 Warna Acak</button></div>
+      <div><button class="btn" id="dlBtn">💾 Simpan PNG</button></div>
+    </div>
+    <div id="studMsg" class="msg info" style="display:block">Misi: coba 4 mode transformasi (0/4).</div>
+  </div>
+</section>
+
+<!-- ============ LKPD ============ -->
+<section id="lkpd" class="panel">
+  <div class="card"><h2>✏️ Kegiatan LKPD</h2>
+  <p>Selesaikan setiap kegiatan. Kamu boleh mencoba berkali-kali. Gunakan Lab Geometri untuk membantu!</p></div>
+  <div id="acts"></div>
+  <div class="card">
+    <h3>📝 Kegiatan 5 – Refleksi Batik</h3>
+    <p>Pilih satu motif batik (boleh motif Gumelem). Transformasi apa saja yang kamu temukan pada motif tersebut? Jelaskan dengan bahasamu sendiri (minimal 30 karakter).</p>
+    <textarea id="esai" rows="5" placeholder="Tulis jawabanmu di sini..."></textarea>
+    <div id="esaiMsg" class="msg"></div>
+  </div>
+</section>
+
+<!-- ============ KUIS ============ -->
+<section id="kuis" class="panel">
+  <div class="card"><h2>🧠 Kuis Cepat</h2><p>Pilih satu jawaban paling tepat pada tiap soal.</p></div>
+  <div id="quiz"></div>
+  <p class="row"><button class="btn gold" id="quizSend">Kirim Jawaban</button><button class="btn alt" id="quizReset">Ulangi</button></p>
+  <div id="quizMsg" class="msg"></div>
+</section>
+
+<!-- ============ HASIL ============ -->
+<section id="hasil" class="panel">
+  <div class="card" style="text-align:center">
+    <h2>🏅 Hasil Belajar</h2>
+    <p id="hNama" style="font-weight:700;margin:0"></p>
+    <div class="score" id="hSkor">0</div>
+    <div class="small">dari 100 poin</div>
+    <p><span class="badge" id="hLevel">Calon Pembatik</span></p>
+  </div>
+  <div class="card">
+    <table>
+      <thead><tr><th>Bagian</th><th>Poin</th><th>Maks</th></tr></thead>
+      <tbody id="hTbl"></tbody>
+    </table>
+    <p class="small">Jawaban refleksi (Kegiatan 5) dinilai oleh guru.</p>
+  </div>
+  <div class="card"><b>Jawaban Refleksi:</b><p id="hEsai" class="small"></p></div>
+  <div class="card noprint" style="text-align:center">
+    <h3>📤 Kirim ke Guru</h3>
+    <p class="small">Pastikan nama dan kelas sudah diisi di Beranda. Hasilmu akan masuk otomatis ke Google Sheets guru.</p>
+    <button class="btn green" id="sendBtn">📤 Kirim Hasil ke Guru</button>
+    <button class="btn" onclick="window.print()">🖨 Cetak / PDF</button>
+    <div id="sendMsg" class="msg"></div>
+  </div>
+</section>
+
+<!-- ============ GURU ============ -->
+<section id="guru" class="panel">
+  <div class="card">
+    <h2>👩‍🏫 Panel Guru &amp; Penjelasan Kode</h2>
+    <p>Bagian ini untuk guru/dosen. Hasil siswa dilihat di <b>Google Sheets</b>, bukan di halaman ini.</p>
+    <div class="flow"><span>Siswa (Google Sites)</span><i>➜</i><span>fetch() POST JSON</span><i>➜</i><span>Apps Script Web App</span><i>➜</i><span>Google Sheets Guru</span></div>
+  </div>
+
+  <div class="card">
+    <h3>⚙️ Cara Memasang (sekali saja)</h3>
+    <ol class="steps">
+      <li>Buat <b>Google Sheets</b> baru, lalu buka <b>Ekstensi &gt; Apps Script</b>.</li>
+      <li>Hapus isi editor, tempel <b>kode Apps Script</b> di bawah ini, lalu simpan.</li>
+      <li>Klik <b>Deploy &gt; New deployment &gt; Web app</b>. Isi <i>Execute as: Me</i> dan <i>Who has access: Anyone</i>, lalu Deploy dan izinkan akses.</li>
+      <li>Salin <b>URL Web App</b> (berakhiran <code>/exec</code>).</li>
+      <li>Tempel URL itu pada konstanta <code>URL_SHEETS</code> di kode HTML (bagian atas &lt;script&gt;), atau coba dulu lewat kolom di bawah.</li>
+    </ol>
+    <label for="urlInput">URL Web App (untuk uji coba cepat)</label>
+    <input id="urlInput" type="text" placeholder="https://script.google.com/macros/s/.../exec">
+    <p class="small">Kolom ini hanya berlaku sementara selama halaman terbuka. Untuk siswa, isi permanen di <code>URL_SHEETS</code>.</p>
+  </div>
+
+  <div class="card">
+    <h3>💻 Kode Apps Script (Code.gs)</h3>
+    <button class="btn alt" id="copyGs">📋 Salin Kode</button>
+    <pre id="gsCode"></pre>
+    <div id="copyMsg" class="msg"></div>
+  </div>
+
+  <div class="card">
+    <h3>🔍 Data yang Dikirim ke Sheets</h3>
+    <button class="btn" id="showPayload">Lihat contoh data (JSON)</button>
+    <pre id="payloadPre" style="display:none"></pre>
+  </div>
+
+  <div class="card">
+    <h3>🧩 Struktur Kode (untuk penjelasan)</h3>
+    <details><summary>HTML + CSS</summary><p>Satu file mandiri. Tema batik memakai warna soga, indigo, dan emas. Pola kawung pada header dibuat dengan SVG data-URI dan <code>@keyframes</code> (drift, spin, shine, pop, shake).</p></details>
+    <details><summary>Animasi motif (Canvas 2D)</summary><p>Fungsi <code>motif()</code> menggambar satu daun batik dengan kurva Bézier. Fungsi <code>demo()</code> menganimasikan empat transformasi memakai <code>requestAnimationFrame</code> dan fungsi easing kosinus.</p></details>
+    <details><summary>Lab Geometri (rumus transformasi)</summary>
+<pre>function rotasi(x, y, p, q, deg){
+  const t = deg * Math.PI / 180;
+  const dx = x - p, dy = y - q;
+  return [p + dx*Math.cos(t) - dy*Math.sin(t),
+          q + dx*Math.sin(t) + dy*Math.cos(t)];
+}
+function dilatasi(x, y, p, q, k){
+  return [p + k*(x - p), q + k*(y - q)];
+}</pre>
+    <p>Animasi dibuat dengan interpolasi parameter t dari 0 ke 1 pada rumus-rumus tersebut.</p></details>
+    <details><summary>Studio Batik</summary><p>Pola dibentuk oleh perulangan transformasi: translasi (grid), refleksi (skala −1 bergantian), rotasi (cincin sudut 2π/n), dan dilatasi (lapisan berfaktor 1,3).</p></details>
+    <details><summary>LKPD, Kuis &amp; Penilaian</summary><p>Jawaban dicek otomatis dengan umpan balik dan petunjuk. Skor 100 poin: LKPD 40, Kuis 40, Tantangan 10, Studio 10. Esai dinilai guru.</p></details>
+    <details><summary>Integrasi Google Sheets</summary><p>Tombol kirim memakai <code>fetch()</code> metode POST ke Web App Apps Script. Apps Script menambah satu baris ke Sheets. Teks dibersihkan agar tidak dianggap rumus (mencegah formula injection).</p></details>
+  </div>
+</section>
+</main>
+
+<footer>E-LKPD Transformasi Geometri berbasis Etnomatematika Batik Gumelem © 2026</footer>
+
+<script>
+/* ============================================================
+   KONFIGURASI GURU: tempel URL Web App Apps Script (berakhiran /exec)
+   ============================================================ */
+const URL_SHEETS = "";
+
+const $ = id => document.getElementById(id);
+const r2 = v => { const x = Math.round(v*100)/100; return x === 0 ? 0 : x; };
+const fmt = v => String(r2(v)).replace('.', ',');
+const active = id => $(id).classList.contains('active');
+
+/* ================= STATE & PROGRESS ================= */
+const state = { l:{}, lscore:{l1:0,l2:0,l3:0,l4:0}, quiz:null, chal:false, modes:{}, esai:false };
+function progressPct(){
+  const done = ['l1','l2','l3','l4'].filter(k=>state.l[k]).length
+    + (state.quiz!==null?1:0) + (state.chal?1:0)
+    + (Object.keys(state.modes).length>=4?1:0) + (state.esai?1:0);
+  return Math.round(done/8*100);
+}
+function progress(){ const p = progressPct(); $('pbar').style.width = p+'%'; $('pbar').textContent = p+'%'; }
+
+/* ================= CONFETTI ================= */
+const cf = $('cf'), cfx = cf.getContext('2d');
+let parts = [], cfRun = false;
+function sizeCf(){ cf.width = window.innerWidth; cf.height = window.innerHeight; }
+sizeCf(); window.addEventListener('resize', sizeCf);
+function confetti(n){
+  const cols = ['#e8b84a','#6b3e1d','#1d2f5e','#a8432b','#2f7d4f','#f6d98a'];
+  for(let i=0;i<(n||80);i++){
+    parts.push({x:cf.width/2+(Math.random()-.5)*160, y:cf.height*.25, vx:(Math.random()-.5)*11, vy:-Math.random()*9-2,
+      s:4+Math.random()*6, c:cols[Math.floor(Math.random()*cols.length)], r:Math.random()*6, vr:(Math.random()-.5)*.4});
+  }
+  if(!cfRun){ cfRun = true; requestAnimationFrame(cfLoop); }
+}
+function cfLoop(){
+  cfx.clearRect(0,0,cf.width,cf.height);
+  parts.forEach(p=>{ p.vy += .28; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+    cfx.save(); cfx.translate(p.x,p.y); cfx.rotate(p.r); cfx.fillStyle = p.c; cfx.fillRect(-p.s/2,-p.s/3,p.s,p.s*.6); cfx.restore(); });
+  parts = parts.filter(p=>p.y < cf.height+20);
+  if(parts.length) requestAnimationFrame(cfLoop); else { cfRun = false; cfx.clearRect(0,0,cf.width,cf.height); }
+}
+
+/* ================= MOTIF BATIK (daun) ================= */
+function motif(c,x,y,s,rot,sx,sy,col,bg,alpha){
+  c.save(); c.translate(x,y); c.rotate(rot); c.scale(sx,sy); c.globalAlpha = alpha===undefined?1:alpha;
+  c.fillStyle = col; c.strokeStyle = '#2b1a0a'; c.lineWidth = 1.1;
+  c.beginPath(); c.moveTo(0,-s);
+  c.bezierCurveTo(s*.9,-s*.4,s*.7,s*.6,0,s);
+  c.bezierCurveTo(-s*.7,s*.6,-s*.9,-s*.4,0,-s);
+  c.fill(); c.stroke();
+  c.strokeStyle = bg; c.lineWidth = 1.2; c.beginPath(); c.moveTo(0,-s*.7); c.lineTo(0,s*.7); c.stroke();
+  c.fillStyle = bg; c.beginPath(); c.arc(s*.35,-s*.25,s*.12,0,7); c.fill();           // titik penanda arah
+  c.strokeStyle = col; c.lineWidth = 2; c.beginPath(); c.moveTo(0,s); c.quadraticCurveTo(s*.5,s*1.3,s*.45,s*1.6); c.stroke(); // sulur
+  c.restore();
+}
+
+/* ================= ANIMASI DEMO (hero & materi) ================= */
+const TYPES = ['translasi','refleksi','rotasi','dilatasi'];
+const TNAME = ['Translasi (Pergeseran)','Refleksi (Pencerminan)','Rotasi (Perputaran)','Dilatasi (Perbesaran)'];
+const TRULE = ['(x, y) → (x + a, y + b)','Cermin sumbu y: (x, y) → (−x, y)','Rotasi 90° pusat O: (x, y) → (−y, x)','Dilatasi pusat O: (x, y) → (kx, ky)'];
+function demo(c,type,t,w,h,col,bg,dc,mc){
+  c.clearRect(0,0,w,h); c.fillStyle = bg; c.fillRect(0,0,w,h);
+  c.fillStyle = dc; for(let x=10;x<w;x+=20) for(let y=10;y<h;y+=20) c.fillRect(x,y,2,2);
+  const s = Math.min(w,h)*.16, cy = h/2-.2*s, p = .5-.5*Math.cos(2*Math.PI*t);
+  c.lineWidth = 2; c.strokeStyle = mc; c.fillStyle = mc;
+  if(type==='translasi'){
+    const x0 = w*.22, x1 = w*.78, x = x0+(x1-x0)*p;
+    motif(c,x0,cy,s,0,1,1,col,bg,.22); motif(c,x1,cy,s,0,1,1,col,bg,.22);
+    c.setLineDash([6,5]); c.beginPath(); c.moveTo(x0,h-14); c.lineTo(x1,h-14); c.stroke(); c.setLineDash([]);
+    c.beginPath(); c.moveTo(x1,h-14); c.lineTo(x1-9,h-19); c.lineTo(x1-9,h-9); c.closePath(); c.fill();
+    motif(c,x,cy,s,0,1,1,col,bg,1);
+  } else if(type==='refleksi'){
+    const x0 = w*.3, x1 = w*.7;
+    c.setLineDash([7,5]); c.beginPath(); c.moveTo(w/2,8); c.lineTo(w/2,h-8); c.stroke(); c.setLineDash([]);
+    motif(c,x0,cy,s,0,1,1,col,bg,1);
+    motif(c,x1,cy,s,0,-1,1,col,bg,.18);
+    motif(c,x0+(x1-x0)*p,cy,s,0,Math.cos(Math.PI*p),1,col,bg,.9);
+  } else if(type==='rotasi'){
+    const C = {x:w/2,y:h/2+.1*s}, R = h*.26, a = t*2*Math.PI;
+    for(let k=0;k<4;k++){ const g = k*Math.PI/2; motif(c,C.x+R*Math.sin(g),C.y-R*Math.cos(g),s*.8,g,1,1,col,bg,.2); }
+    motif(c,C.x+R*Math.sin(a),C.y-R*Math.cos(a),s*.8,a,1,1,col,bg,1);
+    c.beginPath(); c.arc(C.x,C.y,4,0,7); c.fill();
+  } else {
+    const P = {x:w*.25,y:h/2}, d = w*.2, k = 1+1.4*p, bs = s*.6;
+    motif(c,P.x+d,P.y,bs,0,1,1,col,bg,.22);
+    c.setLineDash([5,5]); c.beginPath(); c.moveTo(P.x,P.y); c.lineTo(P.x+d*k,P.y); c.stroke(); c.setLineDash([]);
+    motif(c,P.x+d*k,P.y,bs*k,0,1,1,col,bg,1);
+    c.beginPath(); c.arc(P.x,P.y,4,0,7); c.fill();
+  }
+}
+const hx = $('hero').getContext('2d');
+document.querySelectorAll('canvas.demo').forEach(cn=>{ cn._ctx = cn.getContext('2d'); });
+
+/* ================= NAVIGASI ================= */
+function show(id){
+  playToken++;
+  document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('active', p.id===id));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.t===id));
+  if(id==='lab') drawLab(1);
+  if(id==='studio') drawStudio(sT);
+  if(id==='hasil') renderHasil();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>show(b.dataset.t)));
+
+/* ================= LAB GEOMETRI ================= */
+const cv = $('cv'), cx = cv.getContext('2d');
+const UNIT = 24, ORG = 240;
+const toX = x => ORG + x*UNIT, toY = y => ORG - y*UNIT;
+const SHAPES = {
+  layang:[['A',2,1],['B',3,3],['C',2,5],['D',1,3]],
+  tumpal:[['A',1,1],['B',5,1],['C',3,4]],
+  ketupat:[['A',1,3],['B',3,1],['C',5,3],['D',3,5]]
+};
+let chal = null, playToken = 0;
+
+function P(){
+  return { type:$('lt').value, a:+$('la').value, b:+$('lb').value, ref:$('lref').value,
+           ang:+$('lang').value, p:+$('lp').value, q:+$('lq').value, k:+$('lk').value };
+}
+function tf(x,y,Q,t){
+  if(Q.type==='translasi') return [x+Q.a*t, y+Q.b*t];
+  if(Q.type==='refleksi'){
+    const m = Q.ref==='x'?[x,-y] : Q.ref==='y'?[-x,y] : Q.ref==='yx'?[y,x] : [-y,-x];
+    return [x+(m[0]-x)*t, y+(m[1]-y)*t];
+  }
+  if(Q.type==='rotasi'){
+    const th = Q.ang*Math.PI/180*t, c = Math.cos(th), s = Math.sin(th), dx = x-Q.p, dy = y-Q.q;
+    return [Q.p+dx*c-dy*s, Q.q+dx*s+dy*c];
+  }
+  const kk = 1+(Q.k-1)*t;
+  return [Q.p+kk*(x-Q.p), Q.q+kk*(y-Q.q)];
+}
+function poly(pts, fill, stroke, dash, suffix){
+  cx.beginPath();
+  pts.forEach((p,i)=> i? cx.lineTo(toX(p[1]),toY(p[2])) : cx.moveTo(toX(p[1]),toY(p[2])));
+  cx.closePath();
+  cx.fillStyle = fill; cx.fill();
+  cx.setLineDash(dash||[]); cx.strokeStyle = stroke; cx.lineWidth = 2.2; cx.stroke(); cx.setLineDash([]);
+  cx.fillStyle = stroke; cx.font = 'bold 13px sans-serif';
+  if(suffix!==null) pts.forEach(p=>cx.fillText(p[0]+suffix, toX(p[1])+6, toY(p[2])-6));
+  const mx = pts.reduce((s,p)=>s+p[1],0)/pts.length, my = pts.reduce((s,p)=>s+p[2],0)/pts.length;
+  cx.beginPath(); cx.arc(toX(mx),toY(my),3,0,7); cx.fill();
+}
+function drawLab(t,trail){
+  const Q = P(), S = SHAPES[$('ls').value];
+  cx.clearRect(0,0,480,480);
+  cx.lineWidth = 1; cx.strokeStyle = '#eadcb9';
+  for(let i=-10;i<=10;i++){
+    cx.beginPath(); cx.moveTo(toX(i),0); cx.lineTo(toX(i),480); cx.stroke();
+    cx.beginPath(); cx.moveTo(0,toY(i)); cx.lineTo(480,toY(i)); cx.stroke();
+  }
+  if(Q.type==='refleksi'){
+    cx.strokeStyle = '#2f7d4f'; cx.lineWidth = 3; cx.setLineDash([8,5]); cx.beginPath();
+    if(Q.ref==='x'){cx.moveTo(0,ORG);cx.lineTo(480,ORG);}
+    if(Q.ref==='y'){cx.moveTo(ORG,0);cx.lineTo(ORG,480);}
+    if(Q.ref==='yx'){cx.moveTo(toX(-10),toY(-10));cx.lineTo(toX(10),toY(10));}
+    if(Q.ref==='ynx'){cx.moveTo(toX(-10),toY(10));cx.lineTo(toX(10),toY(-10));}
+    cx.stroke(); cx.setLineDash([]);
+  }
+  cx.strokeStyle = '#333'; cx.lineWidth = 1.8;
+  cx.beginPath(); cx.moveTo(0,ORG); cx.lineTo(480,ORG); cx.moveTo(ORG,0); cx.lineTo(ORG,480); cx.stroke();
+  cx.fillStyle = '#555'; cx.font = '10px sans-serif';
+  for(let i=-10;i<=10;i+=2){ if(i){ cx.fillText(i,toX(i)-4,ORG+12); cx.fillText(i,ORG+4,toY(i)+3);} }
+  cx.font = 'bold 12px sans-serif'; cx.fillText('x',470,ORG-6); cx.fillText('y',ORG+6,12);
+  if(chal){
+    const tg = S.map(p=>[p[0],p[1]+chal.a,p[2]+chal.b]);
+    poly(tg,'rgba(47,125,79,.25)','#2f7d4f',[6,4],null);
+  }
+  if(Q.type==='rotasi'||Q.type==='dilatasi'){
+    if(Q.type==='dilatasi'){
+      cx.strokeStyle='rgba(168,67,43,.5)'; cx.lineWidth=1; cx.setLineDash([3,4]);
+      S.forEach(p=>{const im=tf(p[1],p[2],Q,t); cx.beginPath(); cx.moveTo(toX(Q.p),toY(Q.q)); cx.lineTo(toX(im[0]),toY(im[1])); cx.stroke();});
+      cx.setLineDash([]);
+    }
+    cx.fillStyle = '#a8432b'; cx.beginPath(); cx.arc(toX(Q.p),toY(Q.q),5,0,7); cx.fill();
+    cx.font='bold 12px sans-serif'; cx.fillText('Pusat',toX(Q.p)+7,toY(Q.q)+16);
+  }
+  poly(S,'rgba(29,47,94,.25)','#1d2f5e',null,'');
+  if(trail && t<1){   // jejak gerakan
+    for(let i=3;i>=1;i--){
+      const tt = t-0.07*i; if(tt<=0) continue;
+      poly(S.map(p=>{const m=tf(p[1],p[2],Q,tt); return [p[0],m[0],m[1]];}),'rgba(107,62,29,'+(0.1)+')','rgba(107,62,29,.3)',[2,3],null);
+    }
+  }
+  const img = S.map(p=>{const m=tf(p[1],p[2],Q,t); return [p[0],m[0],m[1]];});
+  poly(img,'rgba(107,62,29,.35)','#6b3e1d',[7,4],"′");
+  if(t===1 && !trail) fillInfo(S,Q);
+}
+function fillInfo(S,Q){
+  const rules = {
+    translasi:`T(${Q.a}, ${Q.b}): (x, y) → (x ${Q.a<0?'−':'+'} ${Math.abs(Q.a)}, y ${Q.b<0?'−':'+'} ${Math.abs(Q.b)})`,
+    refleksi:{x:'Sumbu x: (x, y) → (x, −y)',y:'Sumbu y: (x, y) → (−x, y)',yx:'Garis y = x: (x, y) → (y, x)',ynx:'Garis y = −x: (x, y) → (−y, −x)'}[Q.ref],
+    rotasi:`Rotasi ${Q.ang}° pusat (${Q.p}, ${Q.q})`,
+    dilatasi:`Dilatasi [(${Q.p}, ${Q.q}), k = ${fmt(Q.k)}]`
+  };
+  $('rule').textContent = rules[Q.type];
+  $('tbl').innerHTML = S.map(p=>{
+    const m = tf(p[1],p[2],Q,1);
+    return `<tr><td>${p[0]} → ${p[0]}′</td><td>(${p[1]}, ${p[2]})</td><td>(${fmt(m[0])}, ${fmt(m[1])})</td></tr>`;
+  }).join('');
+}
+function updateLab(){
+  playToken++;
+  const t = $('lt').value;
+  $('g_trans').style.display = t==='translasi'?'block':'none';
+  $('g_ref').style.display   = t==='refleksi'?'block':'none';
+  $('g_rot').style.display   = t==='rotasi'?'block':'none';
+  $('g_dil').style.display   = t==='dilatasi'?'block':'none';
+  $('g_pus').style.display   = (t==='rotasi'||t==='dilatasi')?'block':'none';
+  $('va').textContent=$('la').value; $('vb').textContent=$('lb').value;
+  $('vang').textContent=$('lang').value; $('vk').textContent=fmt(+$('lk').value);
+  $('vp').textContent=$('lp').value; $('vq').textContent=$('lq').value;
+  drawLab(1);
+  if(chal && t==='translasi' && +$('la').value===chal.a && +$('lb').value===chal.b && !state.chal){
+    state.chal = true; progress(); confetti(130);
+    const m = $('chalMsg'); m.className='msg ok'; m.textContent='🎉 Tepat! Bayangan menutupi target. Translasinya T('+chal.a+', '+chal.b+'). +10 poin!';
+  }
+}
+['ls','lt','la','lb','lref','lang','lk','lp','lq'].forEach(id=>$(id).addEventListener('input',updateLab));
+function play(){
+  const my = ++playToken; let s = null; const D = 1600, HLD = 700;
+  const step = ts => {
+    if(my!==playToken) return;
+    if(!s) s = ts;
+    let el = ts - s; const loop = $('lloop').checked;
+    if(loop) el = el % (D+HLD);
+    const t = Math.min(el/D,1);
+    drawLab(t,true);
+    if(loop || el<D) requestAnimationFrame(step); else drawLab(1);
+  };
+  requestAnimationFrame(step);
+}
+$('playBtn').onclick = play;
+$('chalBtn').onclick = () => {
+  const ri = () => { let v=0; while(v===0) v = Math.floor(Math.random()*11)-5; return v; };
+  chal = {a:ri(), b:ri()};
+  $('lt').value = 'translasi'; $('la').value = 0; $('lb').value = 0;
+  const m = $('chalMsg'); m.className='msg info';
+  m.textContent = '🎯 Atur nilai a dan b sampai bayangan (cokelat) menutupi target hijau putus-putus!';
+  updateLab();
+};
+updateLab();
+
+/* ================= STUDIO BATIK ================= */
+const cb = $('cb'), cc = cb.getContext('2d');
+let sT = 0, studioDone = false;
+function drawStudio(time){
+  time = time||0;
+  const mode = $('sm').value, sz = +$('ssz').value, n = +$('sn').value, col = $('sc').value, bg = $('sb').value, an = $('sanim').checked;
+  $('vsz').textContent = sz; $('vn').textContent = n;
+  cc.clearRect(0,0,480,320); cc.fillStyle = bg; cc.fillRect(0,0,480,320);
+  if(!state.modes[mode]){
+    state.modes[mode] = true;
+    const cnt = Object.keys(state.modes).length;
+    $('studMsg').textContent = cnt>=4 ? '✅ Misi selesai! Kamu sudah mencoba keempat transformasi. +10 poin' : `Misi: coba 4 mode transformasi (${cnt}/4).`;
+    if(cnt>=4 && !studioDone){ studioDone = true; confetti(100); }
+    progress();
+  }
+  const W = 480, H = 320;
+  if(mode==='translasi' || mode==='refleksi'){
+    const sx = sz*2.2, sy = sz*3.0, off = an ? (time*0.03)%(2*sx) : 0;
+    let r = 0;
+    for(let y=sz; y<H+sy; y+=sy, r++){
+      for(let c=-2; c*sx+off<W+sx; c++){
+        const x = c*sx+off;
+        if(mode==='translasi') motif(cc,x,y,sz,0,1,1,col,bg);
+        else motif(cc,x,y,sz,0,(c%2!==0)?-1:1,(r%2===1)?-1:1,col,bg);
+      }
+    }
+  } else if(mode==='rotasi'){
+    const cxm = W/2, cym = H/2, a0 = an ? time*0.0005 : 0;
+    for(let i=0;i<n;i++){ const a = i*2*Math.PI/n - a0 + Math.PI/n; motif(cc,cxm+sz*4.2*Math.sin(a), cym-sz*4.2*Math.cos(a), sz*.9, a,1,1,col,bg,.55); }
+    for(let i=0;i<n;i++){ const a = i*2*Math.PI/n + a0; motif(cc,cxm+sz*2.2*Math.sin(a), cym-sz*2.2*Math.cos(a), sz, a,1,1,col,bg); }
+    motif(cc,cxm,cym,sz*.7,a0*2,1,1,col,bg);
+  } else {
+    const cxm = W/2, cym = H/2-10, ratio = 1.3, ph = an ? (time*0.0004)%1 : 0;
+    for(let i=n-1;i>=0;i--){
+      const s = Math.min(sz*.4*Math.pow(ratio,i+ph),150);
+      let f = 1; if(an){ if(i===0) f = ph; else if(i===n-1) f = 1-ph; }
+      motif(cc,cxm,cym,s,0,1,1,col,bg,(.35+.65*(1-i/n))*f);
+    }
+  }
+}
+['sm','ssz','sn','sc','sb','sanim'].forEach(id=>$(id).addEventListener('input',()=>drawStudio(sT)));
+$('rndBtn').onclick = () => {
+  const pal = [['#6b3e1d','#f6e7c8'],['#1d2f5e','#f1e4c3'],['#f1e4c3','#1d2f5e'],['#8a2f1a','#f8ecd2'],['#3a2a14','#d9b36c'],['#2f5d50','#f6e7c8']];
+  const p = pal[Math.floor(Math.random()*pal.length)]; $('sc').value = p[0]; $('sb').value = p[1]; drawStudio(sT);
+};
+$('dlBtn').onclick = () => {
+  try{ const a = document.createElement('a'); a.download = 'batik-gumelem-ku.png'; a.href = cb.toDataURL('image/png'); a.click(); }
+  catch(e){ alert('Browser membatasi unduhan di sini. Klik kanan pada gambar lalu "Simpan gambar sebagai".'); }
+};
+
+/* ================= LOOP ANIMASI UTAMA ================= */
+function tick(ts){
+  if(active('beranda')){
+    const dur = 4500, idx = Math.floor(ts/dur)%4, t = (ts%dur)/dur;
+    demo(hx,TYPES[idx],t,720,260,'#e8b84a','#1d2f5e','rgba(255,255,255,.09)','#7fe0a8');
+    hx.fillStyle = '#fff'; hx.font = 'bold 20px sans-serif'; hx.fillText(TNAME[idx],18,32);
+    hx.font = '14px Consolas,monospace'; hx.fillStyle = '#f1dcae'; hx.fillText(TRULE[idx],18,54);
+    for(let i=0;i<4;i++){ hx.fillStyle = i===idx?'#e8b84a':'rgba(255,255,255,.3)'; hx.beginPath(); hx.arc(640+i*20,24,5,0,7); hx.fill(); }
+  }
+  if(active('materi')){
+    document.querySelectorAll('canvas.demo').forEach(cn=>{
+      if(cn.offsetParent) demo(cn._ctx,cn.dataset.type,(ts%4000)/4000,cn.width,cn.height,'#6b3e1d','#fbf3e1','rgba(107,62,29,.15)','#2f7d4f');
+    });
+  }
+  if(active('studio') && $('sanim').checked){ sT = ts; drawStudio(sT); }
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* ================= LKPD ================= */
+const ACTS = [
+ {id:'l1', t:'Kegiatan 1 – Translasi', story:'Seorang pembatik menggeser titik pusat motif daun A(2, 3) dengan translasi T(4, −1).', pt:'A(2, 3)', ans:[6,2], hint:'Gunakan x′ = x + a dan y′ = y + b.'},
+ {id:'l2', t:'Kegiatan 2 – Refleksi', story:'Motif bunga B(−3, 5) dicerminkan terhadap sumbu y agar berhadapan simetris.', pt:'B(−3, 5)', ans:[3,5], hint:'Pada pencerminan terhadap sumbu y, hanya nilai x yang berubah tanda.'},
+ {id:'l3', t:'Kegiatan 3 – Rotasi', story:'Titik C(4, 2) diputar 90° berlawanan arah jarum jam terhadap pusat O(0, 0).', pt:'C(4, 2)', ans:[-2,4], hint:'Rotasi 90° pusat O: (x, y) → (−y, x).'},
+ {id:'l4', t:'Kegiatan 4 – Dilatasi', story:'Motif dengan titik D(2, −3) diperbesar dengan dilatasi pusat O dan faktor skala 3.', pt:'D(2, −3)', ans:[6,-9], hint:'Kalikan x dan y dengan k = 3.'}
+];
+$('acts').innerHTML = ACTS.map(a=>`
+ <div class="card">
+  <h3>${a.t}</h3>
+  <p>🪶 ${a.story}</p>
+  <p>Tentukan bayangan titik <b>${a.pt}</b>:</p>
+  <div class="row">
+    <div><label>x′ =</label><input type="number" step="any" id="${a.id}x"></div>
+    <div><label>y′ =</label><input type="number" step="any" id="${a.id}y"></div>
+    <div><button class="btn" data-id="${a.id}">Periksa</button></div>
+  </div>
+  <div class="msg" id="${a.id}m"></div>
+ </div>`).join('');
+document.querySelectorAll('#acts button').forEach(b=>b.addEventListener('click',()=>{
+  const a = ACTS.find(z=>z.id===b.dataset.id);
+  const x = parseFloat($(a.id+'x').value.replace(',','.')), y = parseFloat($(a.id+'y').value.replace(',','.'));
+  const m = $(a.id+'m');
+  if(isNaN(x)||isNaN(y)){ m.className='msg info'; m.textContent='Isi x′ dan y′ terlebih dahulu.'; return; }
+  const ox = Math.abs(x-a.ans[0])<1e-9, oy = Math.abs(y-a.ans[1])<1e-9, was = state.l[a.id];
+  state.lscore[a.id] = (ox?5:0)+(oy?5:0);
+  if(ox&&oy){ state.l[a.id]=true; m.className='msg ok'; m.textContent=`✅ Benar! Bayangannya (${a.ans[0]}, ${a.ans[1]}).`; if(!was) confetti(70); }
+  else { state.l[a.id]=false; m.className='msg no'; m.textContent='❌ Belum tepat. Petunjuk: '+a.hint; }
+  progress();
+}));
+$('esai').addEventListener('input',()=>{
+  const ok = $('esai').value.trim().length>=30; state.esai = ok; progress();
+  const m = $('esaiMsg'); m.className = ok?'msg ok':'msg info'; m.textContent = ok?'✅ Jawaban tersimpan.':'Tulis minimal 30 karakter ('+$('esai').value.trim().length+'/30).';
+});
+
+/* ================= KUIS ================= */
+const QZ = [
+ {q:'Motif daun pada kain batik diulang dengan cara digeser ke kanan tanpa mengubah bentuk dan ukuran. Transformasi ini adalah ...', o:['Refleksi','Translasi','Rotasi','Dilatasi'], a:1, e:'Pergeseran tanpa mengubah bentuk/ukuran = translasi.'},
+ {q:'Bayangan titik P(5, −2) oleh pencerminan terhadap sumbu x adalah ...', o:['(−5, −2)','(−5, 2)','(5, 2)','(2, 5)'], a:2, e:'Terhadap sumbu x: (x, y) → (x, −y) sehingga (5, 2).'},
+ {q:'Titik (3, −4) diputar 180° terhadap pusat O. Bayangannya adalah ...', o:['(−3, 4)','(3, 4)','(4, 3)','(−4, −3)'], a:0, e:'Rotasi 180°: (x, y) → (−x, −y) sehingga (−3, 4).'},
+ {q:'Dilatasi pusat O dengan faktor skala 2 pada titik (−2, 3) menghasilkan ...', o:['(−4, 6)','(4, −6)','(−1, 1,5)','(0, 5)'], a:0, e:'(x, y) → (2x, 2y) sehingga (−4, 6).'},
+ {q:'Transformasi yang MENGUBAH ukuran bangun adalah ...', o:['Translasi','Refleksi','Rotasi','Dilatasi'], a:3, e:'Translasi, refleksi, rotasi bersifat isometri (ukuran tetap); dilatasi mengubah ukuran.'}
+];
+function renderQuiz(){
+  $('quiz').innerHTML = QZ.map((z,i)=>`
+   <div class="card"><b>${i+1}. ${z.q}</b>
+   ${z.o.map((o,j)=>`<label class="opt"><input type="radio" name="q${i}" value="${j}"> ${o}</label>`).join('')}
+   <div class="msg" id="qm${i}"></div></div>`).join('');
+}
+renderQuiz();
+$('quizSend').onclick = () => {
+  let s = 0, ans = 0;
+  QZ.forEach((z,i)=>{
+    const c = document.querySelector(`input[name=q${i}]:checked`), m = $('qm'+i);
+    if(!c){ m.className='msg info'; m.textContent='Belum dijawab.'; return; }
+    ans++;
+    if(+c.value===z.a){ s++; m.className='msg ok'; m.textContent='✅ Benar. '+z.e; }
+    else { m.className='msg no'; m.textContent='❌ Kurang tepat. '+z.e; }
+  });
+  const m = $('quizMsg');
+  if(ans<QZ.length){ m.className='msg info'; m.textContent='Masih ada soal yang belum dijawab ('+ans+'/'+QZ.length+').'; state.quiz = null; }
+  else { state.quiz = s; m.className = 'msg ok'; m.textContent = `Skor kuis: ${s}/${QZ.length}`; if(s>=4) confetti(110); }
+  progress();
+};
+$('quizReset').onclick = () => { state.quiz = null; renderQuiz(); $('quizMsg').className='msg'; progress(); };
+
+/* ================= HASIL & KIRIM KE SHEETS ================= */
+function levelName(t){ return t>=85?'Empu Batik':t>=70?'Pembatik Mahir':t>=50?'Pembatik Muda':'Calon Pembatik'; }
+function levelIcon(t){ return t>=85?'🌟 ':t>=70?'🎖 ':t>=50?'🪶 ':'🌱 '; }
+function calc(){
+  const lk = Object.values(state.lscore).reduce((a,b)=>a+b,0);
+  const qz = (state.quiz||0)*8, ch = state.chal?10:0, st = Object.keys(state.modes).length>=4?10:0, tot = lk+qz+ch+st;
+  return { nama:$('nama').value.trim(), kelas:$('kelas').value.trim(), total:tot, level:levelName(tot),
+           lkpd:lk, kuis:qz, tantangan:ch, studio:st, progress:progressPct(), esai:$('esai').value.trim() };
+}
+function renderHasil(){
+  const d = calc();
+  $('hNama').textContent = (d.nama||'(nama belum diisi)') + (d.kelas?' – '+d.kelas:'');
+  $('hSkor').textContent = d.total;
+  $('hLevel').textContent = levelIcon(d.total)+d.level;
+  $('hTbl').innerHTML = [['Kegiatan LKPD (1–4)',d.lkpd,40],['Kuis',d.kuis,40],['Tantangan Lab',d.tantangan,10],['Studio Batik',d.studio,10]]
+    .map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td></tr>`).join('');
+  $('hEsai').textContent = d.esai || '(belum diisi)';
+  if(d.total>=70) confetti(90);
+}
+function getURL(){ return ($('urlInput').value.trim() || URL_SHEETS); }
+$('sendBtn').onclick = () => {
+  const d = calc(), m = $('sendMsg');
+  if(!d.nama || !d.kelas){ m.className='msg no'; m.textContent='Isi nama dan kelas di tab Beranda terlebih dahulu.'; return; }
+  const url = getURL();
+  if(!url){
+    m.className='msg info';
+    m.textContent='Mode demo: URL Google Sheets belum dipasang oleh guru (lihat tab Guru). Data yang siap dikirim: '+JSON.stringify(d);
+    return;
+  }
+  $('sendBtn').disabled = true; m.className='msg info'; m.textContent='Mengirim...';
+  fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)})
+    .then(()=>{ m.className='msg ok'; m.textContent='✅ Hasil terkirim ke guru pada '+new Date().toLocaleTimeString('id-ID')+'.'; confetti(120); })
+    .catch(()=>{ m.className='msg no'; m.textContent='❌ Gagal mengirim. Periksa koneksi internet lalu coba lagi.'; })
+    .finally(()=>{ setTimeout(()=>{ $('sendBtn').disabled = false; },4000); });
+};
+
+/* ================= PANEL GURU ================= */
+const GS_CODE = [
+"// ===== Code.gs : tempel di Ekstensi > Apps Script (dibuka dari Google Sheets guru) =====",
+"var SHEET_NAME = 'Hasil';",
+"var HEADERS = ['Waktu','Nama','Kelas','Skor Total','Level','LKPD (40)','Kuis (40)','Tantangan (10)','Studio (10)','Progres (%)','Jawaban Refleksi'];",
+"",
+"// Mencegah teks diawali = + - @ dibaca sebagai rumus di Sheets",
+"function clean(v) {",
+"  v = String(v == null ? '' : v).slice(0, 2000);",
+"  return /^[=+@-]/.test(v) ? '\\'' + v : v;",
+"}",
+"",
+"function doPost(e) {",
+"  var lock = LockService.getScriptLock();",
+"  try {",
+"    lock.waitLock(10000);",
+"    var d = JSON.parse(e.postData.contents);",
+"    var ss = SpreadsheetApp.getActiveSpreadsheet();",
+"    var sh = ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);",
+"    if (sh.getLastRow() === 0) {",
+"      sh.appendRow(HEADERS);",
+"      sh.setFrozenRows(1);",
+"      sh.getRange(1, 1, 1, HEADERS.length)",
+"        .setFontWeight('bold').setBackground('#6b3e1d').setFontColor('#ffffff');",
+"    }",
+"    sh.appendRow([new Date(), clean(d.nama), clean(d.kelas),",
+"      Number(d.total) || 0, clean(d.level), Number(d.lkpd) || 0,",
+"      Number(d.kuis) || 0, Number(d.tantangan) || 0, Number(d.studio) || 0,",
+"      Number(d.progress) || 0, clean(d.esai)]);",
+"    return ContentService.createTextOutput(JSON.stringify({status: 'ok'}))",
+"      .setMimeType(ContentService.MimeType.JSON);",
+"  } catch (err) {",
+"    return ContentService.createTextOutput(JSON.stringify({status: 'error', message: String(err)}))",
+"      .setMimeType(ContentService.MimeType.JSON);",
+"  } finally {",
+"    lock.releaseLock();",
+"  }",
+"}",
+"",
+"function doGet() {",
+"  return ContentService.createTextOutput('Layanan E-LKPD Batik Gumelem aktif');",
+"}"
+].join('\n');
+$('gsCode').textContent = GS_CODE;
+$('copyGs').onclick = () => {
+  const m = $('copyMsg');
+  const ok = () => { m.className='msg ok'; m.textContent='✅ Kode disalin. Tempel di editor Apps Script.'; };
+  const fail = () => { m.className='msg info'; m.textContent='Salin manual: blok kode di atas lalu tekan Ctrl+C.'; };
+  try{ navigator.clipboard.writeText(GS_CODE).then(ok,fail); }
+  catch(e){ fail(); }
+};
+$('showPayload').onclick = () => { const p = $('payloadPre'); p.style.display = 'block'; p.textContent = JSON.stringify(calc(), null, 2); };
+
+progress();
+</script>
+</body>
+</html>
